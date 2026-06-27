@@ -17,6 +17,16 @@
 
   <!-- EmailJS Browser SDK integration for secure client-side transmission -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function(){
+      // Initialize globally on load using verified Public Key
+      if (window.emailjs) {
+        window.emailjs.init({
+          publicKey: "0JXAOmp_TtYKN8-M0",
+        });
+      }
+    })();
+  </script>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -476,12 +486,18 @@
         const PUBLIC_KEY = "0JXAOmp_TtYKN8-M0";
 
         try {
-          // Initialize EmailJS with your active Public Key
-          window.emailjs.init({
+          // Initialize/Verify EmailJS globally or locally via fallback
+          const ej = window.emailjs || (typeof emailjs !== 'undefined' ? emailjs : null);
+          if (!ej) {
+            throw new Error('EmailJS Browser SDK was not detected. Please refresh your browser and try again.');
+          }
+
+          // Force update config using exact Public Key
+          ej.init({
             publicKey: PUBLIC_KEY,
           });
 
-          // Dynamically map form fields to match your dashboard's template variables
+          // Dynamically map form fields to match your template variables exactly
           const templateParams = {
             from_name: formName,
             reply_to: formEmail,
@@ -493,13 +509,13 @@
           };
 
           // Deliver email securely via SDK channel
-          const response = await window.emailjs.send(
+          const response = await ej.send(
             SERVICE_ID,
             TEMPLATE_ID,
             templateParams
           );
 
-          if (response.status === 200) {
+          if (response && (response.status === 200 || response.text === "OK")) {
             setFormStatus('success');
             setStatusMessage('Your proposal request went through! We will reach out to build something impossible to ignore within 24 hours.');
             // Clear all input states
@@ -509,11 +525,12 @@
             setFormSubject('');
             setFormDetails('');
           } else {
-            throw new Error('Response returned non-200 state');
+            throw new Error(response ? `Status: ${response.status} (${response.text})` : 'Undisplayed API status code error.');
           }
         } catch (error) {
+          console.error("SDK Delivery Error:", error);
           setFormStatus('error');
-          setStatusMessage('Something went sideways. Please try again or reach out to us directly at officialblessingdigital@gmail.com');
+          setStatusMessage(error.text || error.message || 'Something went sideways. Please try again or reach out to us directly at officialblessingdigital@gmail.com');
         }
       };
 
@@ -526,7 +543,6 @@
             <div className="absolute top-[20%] right-[-5%] w-[35vw] h-[35vw] rounded-full bg-[#3a0f18]/15 blur-[100px]" />
           </div>
 
-          {}
           {/* STICKY HEADER / NAVIGATION */}
           <header className="sticky top-0 z-40 bg-[#121212]/80 backdrop-blur-md border-b border-neutral-800/60 transition-all duration-300">
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -645,7 +661,6 @@
             </div>
           </section>
 
-          {}
           {/* FEATURED PROJECT SECTION */}
           <section id="projects" className="py-24 border-t border-neutral-800/40 relative z-10 bg-gradient-to-b from-[#121212] to-[#161616]">
             <div className="max-w-7xl mx-auto px-6">
@@ -733,7 +748,6 @@
             </div>
           </section>
 
-          {}
           {/* PORTFOLIO SECTION */}
           <section className="py-24 relative z-10 bg-[#121212]">
             <div className="max-w-7xl mx-auto px-6">
@@ -891,7 +905,6 @@
             </div>
           </section>
 
-          {}
           {/* ABOUT SECTION */}
           <section id="about" className="py-24 border-t border-neutral-800/40 relative z-10 bg-gradient-to-b from-[#121212] to-[#161616]">
             <div className="max-w-7xl mx-auto px-6">
@@ -967,7 +980,6 @@
             </div>
           </section>
 
-          {}
           {/* CONTACT SECTION */}
           <section id="contact" className="py-24 relative z-10 bg-[#121212]">
             <div className="max-w-7xl mx-auto px-6">
@@ -1023,7 +1035,7 @@
                     ) : (
                       <>
                         {formStatus === 'error' && (
-                          <div className="p-4 rounded-lg bg-red-950/20 border border-red-900/40 text-xs text-red-400 animate-fadeIn">
+                          <div className="p-4 rounded-lg bg-red-950/20 border border-red-900/40 text-xs text-red-400 animate-fadeIn whitespace-pre-line">
                             {statusMessage}
                           </div>
                         )}
@@ -1139,7 +1151,6 @@
             </div>
           </section>
 
-          {}
           {/* FOOTER */}
           <footer className="bg-[#121212] border-t border-neutral-800/80 relative z-10 py-16">
             <div className="max-w-7xl mx-auto px-6">
@@ -1197,7 +1208,6 @@
             <Icon.FloatingMessage className="w-5.5 h-5.5 transition-transform duration-300 group-hover:rotate-12" />
           </button>
 
-          {}
           {/* MODULAR PROJECT SHOWCASE MODAL */}
           {selectedProject && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#121212]/95 backdrop-blur-sm animate-fadeIn">
