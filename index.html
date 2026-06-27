@@ -15,6 +15,9 @@
   <!-- Babel Standalone (To compile JSX dynamically in-browser) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <!-- EmailJS Browser SDK integration for secure client-side transmission -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -472,11 +475,14 @@
         const TEMPLATE_ID = "template_b41am4u";
         const PUBLIC_KEY = "0JXAOmp_TtYKN8-M0";
 
-        const payload = {
-          service_id: SERVICE_ID,
-          template_id: TEMPLATE_ID,
-          user_id: PUBLIC_KEY,
-          template_params: {
+        try {
+          // Initialize EmailJS with your active Public Key
+          window.emailjs.init({
+            publicKey: PUBLIC_KEY,
+          });
+
+          // Dynamically map form fields to match your dashboard's template variables
+          const templateParams = {
             from_name: formName,
             reply_to: formEmail,
             business_name: formBusinessName,
@@ -484,19 +490,16 @@
             project_type: formType,
             message: formDetails,
             recipient_email: "officialblessingdigital@gmail.com"
-          }
-        };
+          };
 
-        try {
-          const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          });
+          // Deliver email securely via SDK channel
+          const response = await window.emailjs.send(
+            SERVICE_ID,
+            TEMPLATE_ID,
+            templateParams
+          );
 
-          if (response.ok) {
+          if (response.status === 200) {
             setFormStatus('success');
             setStatusMessage('Your proposal request went through! We will reach out to build something impossible to ignore within 24 hours.');
             // Clear all input states
